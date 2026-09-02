@@ -554,14 +554,28 @@
       if (USE_DEMO) {
         const data = getDemoData();
         if (!data.messages) data.messages = {};
-        chatMessages = (data.messages[chatId] || []).sort((a, b) => a.createdAt - b.createdAt);
+        chatMessages = (data.messages[chatId] || []).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
       } else {
-        const snap = await db.collection('messages')
-          .where('chatId', '==', chatId)
-          .orderBy('createdAt', 'asc')
-          .limit(100)
-          .get();
-        chatMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        try {
+          // بدون orderBy تا نیاز به Index نباشد
+          const snap = await db.collection('messages')
+            .where('chatId', '==', chatId)
+            .limit(150)
+            .get();
+          chatMessages = snap.docs.map(d => {
+            const data = d.data();
+            // تبدیل Timestamp به عدد
+            let ts = data.createdAt;
+            if (ts && typeof ts.toMillis === 'function') ts = ts.toMillis();
+            else if (ts && ts.seconds) ts = ts.seconds * 1000;
+            return { id: d.id, ...data, createdAt: ts || 0 };
+          });
+          // مرتب‌سازی سمت کلاینت
+          chatMessages.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+        } catch (err) {
+          console.error('Load messages error:', err);
+          chatMessages = [];
+        }
       }
       return chatMessages;
     }
@@ -586,7 +600,10 @@
           saveDemoData(data);
         } else {
           await db.collection('messages').add({
-            ...msg,
+            chatId: msg.chatId,
+            senderId: msg.senderId,
+            senderName: msg.senderName,
+            text: msg.text,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
         }
@@ -594,8 +611,8 @@
         await loadChatMessages(chatId);
         renderChatRoomMessages();
       } catch (err) {
-        console.error(err);
-        showToast('خطا در ارسال پیام', 'error');
+        console.error('Send message error:', err);
+        showToast('خطا در ارسال پیام: ' + (err.message || ''), 'error');
       }
     }
 
