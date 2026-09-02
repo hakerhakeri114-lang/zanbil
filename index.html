@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>زنبیل | لیست خرید خانوادگی</title>
+  <meta name="theme-color" content="#0f766e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi0KLZhtin2YjbjCIsInNob3J0X25hbWUiOiLYotmG2KfZiNuMIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBmNzY2ZSIsInRoZW1lX2NvbG9yIjoiIzBmNzY2ZSIsInN0YXJ0X3VybCI6Ii4iLCJpY29ucyI6W119" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50:'#f0fdfa', 100:'#ccfbf1', 200:'#99f6e4', 300:'#5eead4', 400:'#2dd4bf', 500:'#14b8a6', 600:'#0d9488', 700:'#0f766e', 800:'#115e59', 900:'#134e4a' }
+          },
+          fontFamily: { sans: ['Vazirmatn', 'Tahoma', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+
+  <!-- فونت فارسی -->
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+
+  <!-- تقویم شمسی -->
+  <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+  <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { font-family: Vazirmatn, Tahoma, sans-serif; background: #f8fafc; }
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    .card { background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .btn-primary { background: linear-gradient(135deg, #0d9488, #0f766e); }
+    .btn-primary:active { transform: scale(0.98); }
+    .item-done { opacity: 0.55; text-decoration: line-through; }
+    .fade-in { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .toast { position: fixed; bottom: 5.5rem; left: 50%; transform: translateX(-50%); z-index: 100; }
+    input, select, textarea { font-size: 16px !important; } /* جلوگیری از زوم در iOS */
+    .datepicker-plot-area { font-family: Vazirmatn, Tahoma, sans-serif !important; }
+    .datepicker-plot-area .datepicker-day-view .table-days td.selected span {
+      background-color: #0d9488 !important;
+      border-color: #0d9488 !important;
+    }
+    .datepicker-plot-area .datepicker-day-view .table-days td span.today {
+      border-color: #0d9488 !important;
+      color: #0d9488 !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <!-- ========== صفحه ورود ========== -->
+  <div id="login-page" class="min-h-screen flex flex-col items-center justify-center p-6">
+    <div class="w-full max-w-sm">
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+          </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-teal-800">زنبیل</h1>
+        <p class="text-slate-500 mt-1 text-sm">لیست خرید خانوادگی هوشمند</p>
+      </div>
+
+      <div class="card p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-1">نام شما</label>
+          <input id="login-name" type="text" placeholder="نام خود را وارد کنید" autocomplete="name" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-600 mb-1">شماره موبایل</label>
+          <input id="login-phone" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="09123456789" autocomplete="tel" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" dir="ltr" />
+        </div>
+        <button type="button" id="login-btn" onclick="doLogin()" class="btn-primary w-full text-white font-semibold py-3.5 rounded-xl shadow-md active:scale-95 transition">
+          ورود به زنبیل
+        </button>
+        <p id="login-error" class="text-xs text-center text-red-500 mt-2 hidden"></p>
+        <p class="text-xs text-center text-slate-400 mt-2">با وارد کردن نام و شماره، حساب شما ساخته یا وارد می‌شود</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== اپ اصلی ========== -->
+  <div id="app" class="hidden min-h-screen flex flex-col pb-20">
+    <!-- هدر -->
+    <header class="bg-gradient-to-l from-teal-700 to-teal-600 text-white px-4 pt-4 pb-3 sticky top-0 z-40 shadow-md">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="font-bold text-lg">زنبیل</h1>
+          <p id="header-user" class="text-teal-100 text-xs"></p>
+        </div>
+        <button onclick="logout()" class="text-teal-100 text-sm bg-white/10 px-3 py-1.5 rounded-lg">خروج</button>
+      </div>
+    </header>
+
+    <!-- محتوای صفحات -->
+    <main id="main-content" class="flex-1 p-4 overflow-y-auto"></main>
+
+    <!-- نوار پایین -->
+    <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 safe-bottom z-50">
+      <div class="flex justify-around py-2">
+        <button onclick="showPage('home')" id="nav-home" class="nav-btn flex flex-col items-center gap-0.5 text-teal-700 flex-1 max-w-[4.5rem]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+          <span class="text-[10px]">خانه</span>
+        </button>
+        <button onclick="showPage('create')" id="nav-create" class="nav-btn flex flex-col items-center gap-0.5 text-slate-400 flex-1 max-w-[4.5rem]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          <span class="text-[10px]">لیست جدید</span>
+        </button>
+        <button onclick="showPage('received')" id="nav-received" class="nav-btn flex flex-col items-center gap-0.5 text-slate-400 flex-1 max-w-[4.5rem] relative">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+          <span class="text-[10px]">دریافتی</span>
+          <span id="badge-received" class="hidden absolute top-0 right-3 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center"></span>
+        </button>
+        <button onclick="showPage('chat')" id="nav-chat" class="nav-btn flex flex-col items-center gap-0.5 text-slate-400 flex-1 max-w-[4.5rem] relative">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.75 15.75v-1.5A3.75 3.75 0 019.5 10.5h.75a.75.75 0 00.75-.75V7.5a3 3 0 00-3-3H6.75A2.25 2.25 0 004.5 6.75v1.5"/></svg>
+          <span class="text-[10px]">چت</span>
+          <span id="badge-chat" class="hidden absolute top-0 right-3 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center"></span>
+        </button>
+        <button onclick="showPage('users')" id="nav-users" class="nav-btn flex flex-col items-center gap-0.5 text-slate-400 flex-1 max-w-[4.5rem]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+          <span class="text-[10px]">کاربران</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    // ===================== تنظیمات Firebase =====================
+    // !!! این قسمت را با اطلاعات پروژه خودت عوض کن !!!
+    // آموزش ساخت پروژه رایگان در انتهای فایل آمده
+    const firebaseConfig = {
+      apiKey: "AIzaSyDVPavI_--P3MZx2DECCDXwt9QGoywSNUU",
+      authDomain: "zanbil-family.firebaseapp.com",
+      projectId: "zanbil-family",
+      storageBucket: "zanbil-family.firebasestorage.app",
+      messagingSenderId: "517710636080",
+      appId: "1:517710636080:web:069a5b8ab4773c09a039f5"
+    };
+
+    // اگر هنوز کانفیگ نزدی، از حالت دمو (لوکال) استفاده می‌شود
+    let USE_DEMO = false;
+    if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+      USE_DEMO = true;
+      console.warn("حالت دمو فعال است. برای استفاده واقعی کانفیگ Firebase را وارد کنید.");
+    }
+
+    let app, db, auth;
+    if (!USE_DEMO) {
+      app = firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      auth = firebase.auth();
+    }
+
+    // ===================== متغیرهای سراسری =====================
+    let currentUser = null;          // {id, name, phone}
+    let allUsers = [];
+    let myLists = [];
+    let receivedLists = [];
+    let currentPage = 'home';
+    let editingListId = null;
+    let currentChatId = null;        // برای چت فعال
+    let chatMessages = [];
+    let chatPollInterval = null;
+
+    // دسته‌بندی‌ها
+    const CATEGORIES = [
+      { id: 'dairy', name: 'لبنیات', icon: '🥛' },
+      { id: 'meat', name: 'گوشت و مرغ', icon: '🥩' },
+      { id: 'fruit', name: 'میوه و سبزی', icon: '🍎' },
+      { id: 'bakery', name: 'نان و غلات', icon: '🍞' },
+      { id: 'dry', name: 'خشکبار و حبوبات', icon: '🥜' },
+      { id: 'clean', name: 'شوینده و بهداشتی', icon: '🧴' },
+      { id: 'other', name: 'سایر', icon: '🛒' }
+    ];
+
+    // ===================== حالت دمو (لوکال استوریج) =====================
+    const DEMO_KEY = 'zanbil_demo_data';
+    function getDemoData() {
+      const raw = localStorage.getItem(DEMO_KEY);
+      if (!raw) {
+        const init = { users: [], lists: [], messages: {} };
+        localStorage.setItem(DEMO_KEY, JSON.stringify(init));
+        return init;
+      }
+      const data = JSON.parse(raw);
+      if (!data.messages) data.messages = {};
+      return data;
+    }
+    function saveDemoData(data) {
+      localStorage.setItem(DEMO_KEY, JSON.stringify(data));
+    }
+
+    // ===================== توابع کمکی =====================
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.className = `toast px-5 py-3 rounded-xl text-white text-sm font-medium shadow-lg fade-in ${type === 'success' ? 'bg-teal-600' : 'bg-red-500'}`;
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 2800);
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '—';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleDateString('fa-IR') + ' - ' + d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function requestNotificationPermission() {
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+
+    function sendLocalNotification(title, body) {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body, icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🛒</text></svg>' });
+      }
+    }
+
+    // ===================== ورود =====================
+    async function doLogin() {
+      const btn = document.getElementById('login-btn');
+      const errEl = document.getElementById('login-error');
+      
+      function showLoginError(msg) {
+        if (errEl) {
+          errEl.textContent = msg;
+          errEl.classList.remove('hidden');
+        }
+        showToast(msg, 'error');
+      }
+
+      try {
+        if (errEl) errEl.classList.add('hidden');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'در حال ورود...';
+        }
+
+        const name = document.getElementById('login-name').value.trim();
+        let phone = document.getElementById('login-phone').value.trim().replace(/[\s\-\(\)\.]/g, '');
+
+        // تبدیل اعداد فارسی به انگلیسی
+        phone = phone.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+
+        if (!name || name.length < 2) {
+          showLoginError('نام را درست وارد کنید');
+          return;
+        }
+
+        if (phone.startsWith('+98')) phone = '0' + phone.slice(3);
+        if (phone.startsWith('98') && phone.length >= 12) phone = '0' + phone.slice(2);
+        if (phone.startsWith('9') && phone.length === 10) phone = '0' + phone;
+
+        if (!/^09\d{9}$/.test(phone)) {
+          showLoginError('شماره را به صورت ۱۱ رقمی وارد کنید (مثال: 09123456789)');
+          return;
+        }
+
+        if (USE_DEMO) {
+          const data = getDemoData();
+          let user = data.users.find(u => u.phone === phone);
+          if (!user) {
+            user = { id: 'u_' + Date.now(), name, phone, createdAt: Date.now() };
+            data.users.push(user);
+            saveDemoData(data);
+          } else {
+            user.name = name;
+            saveDemoData(data);
+          }
+          currentUser = user;
+        } else {
+          if (typeof firebase === 'undefined' || !db) {
+            showLoginError('اتصال به سرور برقرار نشد. اینترنت را چک کنید و صفحه را رفرش کنید');
+            return;
+          }
+          const usersRef = db.collection('users');
+          const snap = await usersRef.where('phone', '==', phone).limit(1).get();
+          if (snap.empty) {
+            const docRef = await usersRef.add({ 
+              name, 
+              phone, 
+              createdAt: firebase.firestore.FieldValue.serverTimestamp() 
+            });
+            currentUser = { id: docRef.id, name, phone };
+          } else {
+            const doc = snap.docs[0];
+            currentUser = { id: doc.id, name: name, phone };
+            await usersRef.doc(doc.id).update({ name });
+          }
+        }
+
+        localStorage.setItem('zanbil_user', JSON.stringify(currentUser));
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('header-user').textContent = currentUser.name + ' · ' + currentUser.phone;
+        requestNotificationPermission();
+        await loadAllData();
+        showPage('home');
+        showToast('خوش آمدید ' + currentUser.name + '!');
+      } catch (err) {
+        console.error('Login error:', err);
+        const msg = (err && err.message) ? err.message : 'مشکل در ارتباط با سرور';
+        showLoginError('خطا: ' + msg);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'ورود به زنبیل';
+        }
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('zanbil_user');
+      currentUser = null;
+      document.getElementById('app').classList.add('hidden');
+      document.getElementById('login-page').classList.remove('hidden');
+      document.getElementById('login-name').value = '';
+      document.getElementById('login-phone').value = '';
+    }
+
+    // ===================== بارگذاری داده‌ها =====================
+    async function loadAllData() {
+      await Promise.all([loadUsers(), loadMyLists(), loadReceivedLists()]);
+      updateBadge();
+    }
+
+    async function loadUsers() {
+      if (USE_DEMO) {
+        allUsers = getDemoData().users.filter(u => u.id !== currentUser.id);
+      } else {
+        const snap = await db.collection('users').get();
+        allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.id !== currentUser.id);
+      }
+    }
+
+    async function loadMyLists() {
+      if (USE_DEMO) {
+        myLists = getDemoData().lists.filter(l => l.creatorId === currentUser.id).sort((a,b) => b.createdAt - a.createdAt);
+      } else {
+        const snap = await db.collection('lists')
+          .where('creatorId', '==', currentUser.id)
+          .orderBy('createdAt', 'desc')
+          .get();
+        myLists = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
+    }
+
+    async function loadReceivedLists() {
+      if (USE_DEMO) {
+        receivedLists = getDemoData().lists.filter(l => l.assigneeId === currentUser.id).sort((a,b) => b.createdAt - a.createdAt);
+      } else {
+        const snap = await db.collection('lists')
+          .where('assigneeId', '==', currentUser.id)
+          .orderBy('createdAt', 'desc')
+          .get();
+        receivedLists = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
+    }
+
+    function updateBadge() {
+      const pending = receivedLists.filter(l => l.status !== 'done').length;
+      const badge = document.getElementById('badge-received');
+      if (pending > 0) {
+        badge.textContent = pending;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    // ===================== ناوبری =====================
+    function showPage(page) {
+      // توقف پولینگ چت وقتی از چت خارج می‌شویم
+      if (page !== 'chatroom' && chatPollInterval) {
+        clearInterval(chatPollInterval);
+        chatPollInterval = null;
+        currentChatId = null;
+      }
+
+      currentPage = page;
+      document.querySelectorAll('.nav-btn').forEach(b => {
+        b.classList.remove('text-teal-700');
+        b.classList.add('text-slate-400');
+      });
+      const active = document.getElementById('nav-' + page);
+      if (active) {
+        active.classList.remove('text-slate-400');
+        active.classList.add('text-teal-700');
+      }
+
+      const main = document.getElementById('main-content');
+      if (page === 'home') renderHome(main);
+      else if (page === 'create') renderCreate(main);
+      else if (page === 'received') renderReceived(main);
+      else if (page === 'chat') renderChatList(main);
+      else if (page === 'users') renderUsers(main);
+      else if (page === 'detail' || page === 'chatroom') {} // handled separately
+    }
+
+    // ===================== صفحه خانه (لیست‌های من) =====================
+    function renderHome(container) {
+      let html = `
+        <div class="mb-4">
+          <h2 class="text-lg font-bold text-slate-800">لیست‌های من</h2>
+          <p class="text-sm text-slate-500">لیست‌هایی که خودت ساختی</p>
+        </div>
+      `;
+
+      if (myLists.length === 0) {
+        html += `
+          <div class="card p-8 text-center">
+            <div class="text-4xl mb-3">📝</div>
+            <p class="text-slate-500">هنوز لیستی نساختی</p>
+            <button onclick="showPage('create')" class="mt-4 btn-primary text-white px-5 py-2.5 rounded-xl text-sm">ساخت اولین لیست</button>
+          </div>
+        `;
+      } else {
+        myLists.forEach(list => {
+          const doneCount = (list.items || []).filter(i => i.done).length;
+          const total = (list.items || []).length;
+          const statusColor = list.status === 'done' ? 'bg-green-100 text-green-700' : list.status === 'in_progress' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600';
+          const statusText = list.status === 'done' ? 'انجام شد' : list.status === 'in_progress' ? 'در حال خرید' : 'در انتظار';
+
+          html += `
+            <div class="card p-4 mb-3 fade-in" onclick="openListDetail('${list.id}', 'my')">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-semibold text-slate-800">${list.title || 'بدون عنوان'}</h3>
+                  <p class="text-xs text-slate-500 mt-0.5">برای: ${list.assigneeName || '—'}</p>
+                </div>
+                <span class="text-xs px-2.5 py-1 rounded-full ${statusColor}">${statusText}</span>
+              </div>
+              <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+                <span>${doneCount}/${total} کالا</span>
+                <span>${formatDate(list.scheduledAt || list.createdAt)}</span>
+              </div>
+              ${list.status === 'done' && list.completedBy ? `<p class="text-xs text-green-600 mt-2">✓ خرید توسط ${list.completedBy} انجام شد</p>` : ''}
+            </div>
+          `;
+        });
+      }
+      container.innerHTML = html;
+    }
+
+    // ===================== صفحه لیست‌های دریافتی =====================
+    function renderReceived(container) {
+      let html = `
+        <div class="mb-4">
+          <h2 class="text-lg font-bold text-slate-800">لیست‌های دریافتی</h2>
+          <p class="text-sm text-slate-500">لیست‌هایی که برای تو فرستاده شده</p>
+        </div>
+      `;
+
+      if (receivedLists.length === 0) {
+        html += `
+          <div class="card p-8 text-center">
+            <div class="text-4xl mb-3">📭</div>
+            <p class="text-slate-500">هنوز لیستی برات نیومده</p>
+          </div>
+        `;
+      } else {
+        receivedLists.forEach(list => {
+          const doneCount = (list.items || []).filter(i => i.done).length;
+          const total = (list.items || []).length;
+          const statusColor = list.status === 'done' ? 'bg-green-100 text-green-700' : list.status === 'in_progress' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700';
+          const statusText = list.status === 'done' ? 'انجام شد' : list.status === 'in_progress' ? 'در حال خرید' : 'جدید';
+
+          html += `
+            <div class="card p-4 mb-3 fade-in border-r-4 ${list.status === 'done' ? 'border-green-400' : 'border-teal-500'}" onclick="openListDetail('${list.id}', 'received')">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-semibold text-slate-800">${list.title || 'بدون عنوان'}</h3>
+                  <p class="text-xs text-slate-500 mt-0.5">از طرف: ${list.creatorName || '—'}</p>
+                </div>
+                <span class="text-xs px-2.5 py-1 rounded-full ${statusColor}">${statusText}</span>
+              </div>
+              <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+                <span>${doneCount}/${total} کالا</span>
+                <span>${formatDate(list.scheduledAt || list.createdAt)}</span>
+              </div>
+            </div>
+          `;
+        });
+      }
+      container.innerHTML = html;
+    }
+
+    // ===================== صفحه کاربران =====================
+    function renderUsers(container) {
+      let html = `
+        <div class="mb-4">
+          <h2 class="text-lg font-bold text-slate-800">کاربران زنبیل</h2>
+          <p class="text-sm text-slate-500">لیست کسانی که ثبت‌نام کردن</p>
+        </div>
+      `;
+
+      if (allUsers.length === 0) {
+        html += `
+          <div class="card p-8 text-center">
+            <div class="text-4xl mb-3">👥</div>
+            <p class="text-slate-500">هنوز کسی ثبت‌نام نکرده</p>
+            <p class="text-xs text-slate-400 mt-2">لینک برنامه را برای اعضای خانواده بفرست</p>
+          </div>
+        `;
+      } else {
+        allUsers.forEach(u => {
+          html += `
+            <div class="card p-4 mb-3 flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-lg">
+                ${u.name.charAt(0)}
+              </div>
+              <div class="flex-1">
+                <p class="font-medium">${u.name}</p>
+                <p class="text-xs text-slate-500" dir="ltr">${u.phone}</p>
+              </div>
+              <button onclick="event.stopPropagation(); openChatRoom('${getPrivateChatId(currentUser.id, u.id)}', '${u.name}', false)" class="text-teal-600 text-xs bg-teal-50 px-3 py-1.5 rounded-lg">
+                چت
+              </button>
+            </div>
+          `;
+        });
+      }
+      container.innerHTML = html;
+    }
+
+    // ===================== سیستم چت =====================
+    // چت گروهی ثابت
+    const GROUP_CHAT_ID = 'group_family';
+
+    function getPrivateChatId(userId1, userId2) {
+      return [userId1, userId2].sort().join('_');
+    }
+
+    async function loadChatMessages(chatId) {
+      if (USE_DEMO) {
+        const data = getDemoData();
+        if (!data.messages) data.messages = {};
+        chatMessages = (data.messages[chatId] || []).sort((a, b) => a.createdAt - b.createdAt);
+      } else {
+        const snap = await db.collection('messages')
+          .where('chatId', '==', chatId)
+          .orderBy('createdAt', 'asc')
+          .limit(100)
+          .get();
+        chatMessages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
+      return chatMessages;
+    }
+
+    async function sendMessage(chatId, text) {
+      if (!text.trim()) return;
+      const msg = {
+        chatId,
+        senderId: currentUser.id,
+        senderName: currentUser.name,
+        text: text.trim(),
+        createdAt: Date.now()
+      };
+
+      try {
+        if (USE_DEMO) {
+          const data = getDemoData();
+          if (!data.messages) data.messages = {};
+          if (!data.messages[chatId]) data.messages[chatId] = [];
+          msg.id = 'm_' + Date.now();
+          data.messages[chatId].push(msg);
+          saveDemoData(data);
+        } else {
+          await db.collection('messages').add({
+            ...msg,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+        // رفرش پیام‌ها
+        await loadChatMessages(chatId);
+        renderChatRoomMessages();
+      } catch (err) {
+        console.error(err);
+        showToast('خطا در ارسال پیام', 'error');
+      }
+    }
+
+    function renderChatList(container) {
+      // توقف پولینگ قبلی
+      if (chatPollInterval) {
+        clearInterval(chatPollInterval);
+        chatPollInterval = null;
+      }
+
+      let html = `
+        <div class="mb-4">
+          <h2 class="text-lg font-bold text-slate-800">چت</h2>
+          <p class="text-sm text-slate-500">گفتگوی گروهی و خصوصی</p>
+        </div>
+
+        <!-- چت گروهی -->
+        <div class="card p-4 mb-3 flex items-center gap-3 cursor-pointer active:bg-slate-50" onclick="openChatRoom('${GROUP_CHAT_ID}', 'چت گروهی خانواده', true)">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-teal-700 text-white flex items-center justify-center text-xl">
+            👨‍👩‍👧‍👦
+          </div>
+          <div class="flex-1">
+            <p class="font-semibold text-slate-800">چت گروهی خانواده</p>
+            <p class="text-xs text-slate-500">همه اعضای خانواده</p>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+        </div>
+
+        <div class="mt-5 mb-2">
+          <h3 class="text-sm font-semibold text-slate-600">گفتگوی خصوصی</h3>
+        </div>
+      `;
+
+      if (allUsers.length === 0) {
+        html += `
+          <div class="card p-6 text-center">
+            <p class="text-slate-500 text-sm">هنوز کاربری ثبت‌نام نکرده</p>
+          </div>
+        `;
+      } else {
+        allUsers.forEach(u => {
+          html += `
+            <div class="card p-3 mb-2 flex items-center gap-3 cursor-pointer active:bg-slate-50" onclick="openChatRoom('${getPrivateChatId(currentUser.id, u.id)}', '${u.name}', false)">
+              <div class="w-11 h-11 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-lg">
+                ${u.name.charAt(0)}
+              </div>
+              <div class="flex-1">
+                <p class="font-medium text-slate-800">${u.name}</p>
+                <p class="text-xs text-slate-500" dir="ltr">${u.phone}</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+            </div>
+          `;
+        });
+      }
+
+      container.innerHTML = html;
+    }
+
+    async function openChatRoom(chatId, title, isGroup) {
+      currentChatId = chatId;
+      currentPage = 'chatroom';
+
+      // توقف پولینگ قبلی
+      if (chatPollInterval) clearInterval(chatPollInterval);
+
+      const container = document.getElementById('main-content');
+      container.innerHTML = `
+        <div class="flex flex-col h-[calc(100vh-8.5rem)]">
+          <!-- هدر چت -->
+          <div class="flex items-center gap-3 mb-3 pb-3 border-b border-slate-200">
+            <button onclick="showPage('chat')" class="text-teal-600 p-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+            </button>
+            <div class="flex-1">
+              <h2 class="font-bold text-slate-800">${title}</h2>
+              <p class="text-xs text-slate-500">${isGroup ? 'گروهی' : 'خصوصی'}</p>
+            </div>
+          </div>
+
+          <!-- پیام‌ها -->
+          <div id="chat-messages" class="flex-1 overflow-y-auto space-y-3 pb-3"></div>
+
+          <!-- ورودی پیام -->
+          <div class="flex gap-2 pt-2 border-t border-slate-200">
+            <input id="chat-input" type="text" placeholder="پیام خود را بنویسید..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 outline-none text-sm" onkeydown="if(event.key==='Enter') sendChatMessage()" />
+            <button onclick="sendChatMessage()" class="btn-primary text-white px-4 rounded-xl flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+
+      await loadChatMessages(chatId);
+      renderChatRoomMessages();
+
+      // پولینگ برای حالت دمو و همچنین رفرش دوره‌ای
+      chatPollInterval = setInterval(async () => {
+        if (currentPage === 'chatroom' && currentChatId === chatId) {
+          await loadChatMessages(chatId);
+          renderChatRoomMessages();
+        }
+      }, USE_DEMO ? 1500 : 4000);
+    }
+
+    function renderChatRoomMessages() {
+      const box = document.getElementById('chat-messages');
+      if (!box) return;
+
+      if (chatMessages.length === 0) {
+        box.innerHTML = `
+          <div class="flex items-center justify-center h-full text-slate-400 text-sm">
+            هنوز پیامی نیست. اولین پیام را بفرستید!
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      chatMessages.forEach(msg => {
+        const isMe = msg.senderId === currentUser.id;
+        const time = formatDate(msg.createdAt);
+        html += `
+          <div class="flex ${isMe ? 'justify-start' : 'justify-end'}">
+            <div class="max-w-[80%] ${isMe ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-800'} rounded-2xl px-3.5 py-2 shadow-sm">
+              ${!isMe ? `<p class="text-[11px] font-semibold mb-0.5 ${isMe ? 'text-teal-100' : 'text-teal-700'}">${msg.senderName}</p>` : ''}
+              <p class="text-sm leading-relaxed whitespace-pre-wrap">${escapeHtml(msg.text)}</p>
+              <p class="text-[10px] mt-1 ${isMe ? 'text-teal-100' : 'text-slate-400'} text-left" dir="ltr">${time}</p>
+            </div>
+          </div>
+        `;
+      });
+      box.innerHTML = html;
+      // اسکرول به آخر
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      if (!input || !currentChatId) return;
+      const text = input.value;
+      input.value = '';
+      sendMessage(currentChatId, text);
+    }
+
+    // ===================== ساخت لیست جدید =====================
+    let createItems = [];
+
+    function renderCreate(container) {
+      createItems = [];
+      editingListId = null;
+
+      let userOptions = allUsers.map(u => `<option value="${u.id}">${u.name} (${u.phone})</option>`).join('');
+
+      let catOptions = CATEGORIES.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+
+      container.innerHTML = `
+        <div class="mb-4">
+          <h2 class="text-lg font-bold text-slate-800">ساخت لیست خرید</h2>
+        </div>
+
+        <div class="card p-4 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-600 mb-1">عنوان لیست</label>
+            <input id="list-title" type="text" placeholder="مثلاً خرید هفتگی" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-600 mb-1">ارسال به</label>
+            <select id="list-assignee" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 outline-none bg-white">
+              <option value="">انتخاب کاربر...</option>
+              ${userOptions}
+            </select>
+            ${allUsers.length === 0 ? '<p class="text-xs text-amber-600 mt-1">هنوز کاربری ثبت‌نام نکرده. اول بقیه عضو بشن.</p>' : ''}
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-600 mb-1">تاریخ خرید (شمسی)</label>
+            <input id="list-date" type="text" placeholder="انتخاب تاریخ" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 outline-none" readonly />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-600 mb-1">ساعت خرید</label>
+            <input id="list-time" type="time" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-teal-500 outline-none" />
+            <p class="text-xs text-slate-400 mt-1">در این زمان به خریدار یادآوری می‌شود (اختیاری)</p>
+          </div>
+        </div>
+
+        <div class="mt-5 mb-2 flex justify-between items-center">
+          <h3 class="font-semibold text-slate-700">کالاها</h3>
+          <button onclick="addItemRow()" class="text-teal-600 text-sm font-medium">+ افزودن کالا</button>
+        </div>
+
+        <div id="items-container" class="space-y-3"></div>
+
+        <button onclick="saveList()" class="btn-primary w-full text-white font-semibold py-3.5 rounded-xl mt-6 shadow-md">
+          ذخیره و ارسال لیست
+        </button>
+      `;
+
+      addItemRow(); // حداقل یک ردیف
+
+      // راه‌اندازی تقویم شمسی
+      setTimeout(() => {
+        if (typeof $ !== 'undefined' && $.fn.persianDatepicker) {
+          $('#list-date').persianDatepicker({
+            format: 'YYYY/MM/DD',
+            initialValue: false,
+            autoClose: true,
+            calendar: {
+              persian: {
+                locale: 'fa'
+              }
+            },
+            toolbox: {
+              calendarSwitch: {
+                enabled: false
+              }
+            },
+            navigator: {
+              scroll: {
+                enabled: false
+              }
+            }
+          });
+        }
+      }, 100);
+    }
+
+    function addItemRow() {
+      const id = 'item_' + Date.now() + Math.random().toString(36).slice(2,6);
+      createItems.push({ id, name: '', category: 'other', qty: '', unit: 'عدد', done: false });
+
+      const container = document.getElementById('items-container');
+      const div = document.createElement('div');
+      div.id = 'row_' + id;
+      div.className = 'card p-3 fade-in';
+      div.innerHTML = `
+        <div class="flex gap-2 mb-2">
+          <input type="text" placeholder="نام کالا" data-id="${id}" data-field="name" class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-teal-500" oninput="updateItemField(this)" />
+          <button onclick="removeItemRow('${id}')" class="text-red-400 px-2">✕</button>
+        </div>
+        <div class="flex gap-2">
+          <select data-id="${id}" data-field="category" class="flex-1 border border-slate-200 rounded-lg px-2 py-2 text-sm bg-white outline-none" onchange="updateItemField(this)">
+            ${CATEGORIES.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('')}
+          </select>
+          <input type="text" placeholder="مقدار" data-id="${id}" data-field="qty" class="w-20 border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none text-center" oninput="updateItemField(this)" />
+          <select data-id="${id}" data-field="unit" class="w-24 border border-slate-200 rounded-lg px-1 py-2 text-sm bg-white outline-none" onchange="updateItemField(this)">
+            <option value="عدد">عدد</option>
+            <option value="کیلو">کیلو</option>
+            <option value="گرم">گرم</option>
+            <option value="بسته">بسته</option>
+            <option value="لیتر">لیتر</option>
+            <option value="قوطی">قوطی</option>
+          </select>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    function updateItemField(el) {
+      const id = el.dataset.id;
+      const field = el.dataset.field;
+      const item = createItems.find(i => i.id === id);
+      if (item) item[field] = el.value;
+    }
+
+    function removeItemRow(id) {
+      createItems = createItems.filter(i => i.id !== id);
+      const row = document.getElementById('row_' + id);
+      if (row) row.remove();
+    }
+
+    async function saveList() {
+      const title = document.getElementById('list-title').value.trim();
+      const assigneeId = document.getElementById('list-assignee').value;
+      const dateVal = document.getElementById('list-date').value.trim();
+      const timeVal = document.getElementById('list-time').value;
+
+      if (!title) return showToast('عنوان لیست را بنویس', 'error');
+      if (!assigneeId) return showToast('یک نفر را برای ارسال انتخاب کن', 'error');
+
+      const validItems = createItems.filter(i => i.name.trim());
+      if (validItems.length === 0) return showToast('حداقل یک کالا اضافه کن', 'error');
+
+      const assignee = allUsers.find(u => u.id === assigneeId);
+
+      // تبدیل تاریخ شمسی به میلادی برای ذخیره
+      let scheduledAt = null;
+      if (dateVal) {
+        try {
+          // dateVal مثل 1405/06/11 است
+          const parts = dateVal.split(/[\/\-\.]/);
+          if (parts.length === 3) {
+            const jy = parseInt(parts[0]);
+            const jm = parseInt(parts[1]);
+            const jd = parseInt(parts[2]);
+            // استفاده از persian-date برای تبدیل
+            const pd = new persianDate([jy, jm, jd]);
+            let dateObj = pd.toDate(); // تبدیل به Date میلادی
+            if (timeVal) {
+              const [h, m] = timeVal.split(':');
+              dateObj.setHours(parseInt(h) || 0, parseInt(m) || 0, 0, 0);
+            }
+            scheduledAt = dateObj.getTime();
+          }
+        } catch (e) {
+          console.warn('خطا در تبدیل تاریخ شمسی', e);
+        }
+      }
+
+      const listData = {
+        title,
+        creatorId: currentUser.id,
+        creatorName: currentUser.name,
+        assigneeId,
+        assigneeName: assignee ? assignee.name : '',
+        items: validItems.map(i => ({
+          name: i.name.trim(),
+          category: i.category,
+          qty: i.qty || '1',
+          unit: i.unit,
+          done: false
+        })),
+        status: 'pending',
+        createdAt: Date.now(),
+        scheduledAt,
+        completedBy: null,
+        completedAt: null
+      };
+
+      try {
+        if (USE_DEMO) {
+          const data = getDemoData();
+          listData.id = 'l_' + Date.now();
+          data.lists.push(listData);
+          saveDemoData(data);
+        } else {
+          await db.collection('lists').add({
+            ...listData,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            scheduledAt: scheduledAt ? firebase.firestore.Timestamp.fromDate(new Date(scheduledAt)) : null
+          });
+        }
+
+        showToast('لیست با موفقیت ارسال شد ✓');
+        await loadAllData();
+        showPage('home');
+
+        // نوتیفیکیشن ساده
+        sendLocalNotification('لیست جدید ارسال شد', `لیست «${title}» برای ${listData.assigneeName} فرستاده شد`);
+      } catch (err) {
+        console.error(err);
+        showToast('خطا در ذخیره لیست', 'error');
+      }
+    }
+
+    // ===================== جزئیات لیست =====================
+    async function openListDetail(listId, from) {
+      let list;
+      if (USE_DEMO) {
+        list = getDemoData().lists.find(l => l.id === listId);
+      } else {
+        const doc = await db.collection('lists').doc(listId).get();
+        if (!doc.exists) return showToast('لیست پیدا نشد', 'error');
+        list = { id: doc.id, ...doc.data() };
+      }
+
+      if (!list) return;
+
+      currentPage = 'detail';
+      const container = document.getElementById('main-content');
+      const isAssignee = list.assigneeId === currentUser.id;
+      const isCreator = list.creatorId === currentUser.id;
+      const canEditItems = isAssignee && list.status !== 'done';
+
+      // گروه‌بندی بر اساس دسته
+      const grouped = {};
+      CATEGORIES.forEach(c => grouped[c.id] = []);
+      (list.items || []).forEach(item => {
+        const cat = item.category || 'other';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(item);
+      });
+
+      let itemsHtml = '';
+      CATEGORIES.forEach(cat => {
+        if (grouped[cat.id] && grouped[cat.id].length > 0) {
+          itemsHtml += `<div class="mb-4"><p class="text-xs font-semibold text-slate-500 mb-2">${cat.icon} ${cat.name}</p>`;
+          grouped[cat.id].forEach((item, idx) => {
+            const globalIdx = list.items.findIndex(i => i === item);
+            itemsHtml += `
+              <div class="flex items-center gap-3 py-2.5 border-b border-slate-100 last:border-0 ${item.done ? 'item-done' : ''}">
+                ${canEditItems ? `
+                  <button onclick="toggleItemDone('${listId}', ${globalIdx})" class="w-6 h-6 rounded-full border-2 flex items-center justify-center ${item.done ? 'bg-teal-500 border-teal-500 text-white' : 'border-slate-300'}">
+                    ${item.done ? '✓' : ''}
+                  </button>
+                ` : `
+                  <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center ${item.done ? 'bg-teal-500 border-teal-500 text-white' : 'border-slate-300'}">
+                    ${item.done ? '✓' : ''}
+                  </div>
+                `}
+                <div class="flex-1">
+                  <p class="font-medium text-sm">${item.name}</p>
+                  <p class="text-xs text-slate-500">${item.qty} ${item.unit}</p>
+                </div>
+              </div>
+            `;
+          });
+          itemsHtml += `</div>`;
+        }
+      });
+
+      container.innerHTML = `
+        <button onclick="showPage('${from === 'my' ? 'home' : 'received'}')" class="text-teal-600 text-sm mb-3 flex items-center gap-1">
+          ← بازگشت
+        </button>
+
+        <div class="card p-4 mb-4">
+          <h2 class="text-xl font-bold text-slate-800">${list.title}</h2>
+          <div class="mt-2 space-y-1 text-sm text-slate-600">
+            <p>از طرف: <span class="font-medium">${list.creatorName}</span></p>
+            <p>برای: <span class="font-medium">${list.assigneeName}</span></p>
+            <p>زمان: ${formatDate(list.scheduledAt || list.createdAt)}</p>
+            <p>وضعیت: <span class="font-medium">${list.status === 'done' ? 'انجام شد' : list.status === 'in_progress' ? 'در حال خرید' : 'در انتظار'}</span></p>
+            ${list.completedBy ? `<p class="text-green-600">✓ خرید توسط ${list.completedBy} در ${formatDate(list.completedAt)}</p>` : ''}
+          </div>
+        </div>
+
+        <div class="card p-4">
+          <h3 class="font-semibold mb-3">اقلام خرید</h3>
+          ${itemsHtml || '<p class="text-slate-400 text-sm">کالایی نیست</p>'}
+        </div>
+
+        ${isAssignee && list.status !== 'done' ? `
+          <button onclick="markListDone('${listId}')" class="btn-primary w-full text-white font-semibold py-3.5 rounded-xl mt-5 shadow-md">
+            ✓ خرید کامل شد
+          </button>
+        ` : ''}
+      `;
+    }
+
+    async function toggleItemDone(listId, itemIndex) {
+      try {
+        if (USE_DEMO) {
+          const data = getDemoData();
+          const list = data.lists.find(l => l.id === listId);
+          if (list && list.items[itemIndex]) {
+            list.items[itemIndex].done = !list.items[itemIndex].done;
+            // اگر حداقل یکی تیک خورده باشد وضعیت را in_progress کن
+            if (list.items.some(i => i.done) && list.status === 'pending') list.status = 'in_progress';
+            saveDemoData(data);
+          }
+        } else {
+          const ref = db.collection('lists').doc(listId);
+          const doc = await ref.get();
+          const list = doc.data();
+          list.items[itemIndex].done = !list.items[itemIndex].done;
+          if (list.items.some(i => i.done) && list.status === 'pending') list.status = 'in_progress';
+          await ref.update({ items: list.items, status: list.status });
+        }
+        openListDetail(listId, currentPage === 'detail' ? 'received' : 'received');
+        await loadReceivedLists();
+        updateBadge();
+      } catch (err) {
+        console.error(err);
+        showToast('خطا', 'error');
+      }
+    }
+
+    async function markListDone(listId) {
+      if (!confirm('آیا خرید کامل انجام شده؟')) return;
+
+      try {
+        if (USE_DEMO) {
+          const data = getDemoData();
+          const list = data.lists.find(l => l.id === listId);
+          if (list) {
+            list.status = 'done';
+            list.completedBy = currentUser.name;
+            list.completedAt = Date.now();
+            list.items.forEach(i => i.done = true);
+            saveDemoData(data);
+          }
+        } else {
+          await db.collection('lists').doc(listId).update({
+            status: 'done',
+            completedBy: currentUser.name,
+            completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            items: firebase.firestore.FieldValue.arrayUnion() // will handle properly below
+          });
+          // بهتر است کل items را آپدیت کنیم
+          const doc = await db.collection('lists').doc(listId).get();
+          const items = doc.data().items.map(i => ({ ...i, done: true }));
+          await db.collection('lists').doc(listId).update({ items });
+        }
+
+        showToast('عالی! خرید ثبت شد و به فرستنده اطلاع داده شد');
+        sendLocalNotification('خرید انجام شد', `${currentUser.name} خرید را تکمیل کرد`);
+
+        await loadAllData();
+        showPage('received');
+      } catch (err) {
+        console.error(err);
+        showToast('خطا در ثبت', 'error');
+      }
+    }
+
+    // ===================== راه‌اندازی =====================
+    window.onload = function() {
+      const saved = localStorage.getItem('zanbil_user');
+      if (saved) {
+        currentUser = JSON.parse(saved);
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('header-user').textContent = currentUser.name + ' · ' + currentUser.phone;
+        loadAllData().then(() => showPage('home'));
+        requestNotificationPermission();
+      }
+    };
+  </script>
+
+  <!-- 
+  ============================================================
+  راهنمای کامل ساخت پروژه رایگان Firebase و اجرای روی چند دستگاه
+  ============================================================
+
+  ### مرحله ۱: ساخت پروژه Firebase (رایگان)
+
+  1. برو به: https://console.firebase.google.com
+  2. با اکانت گوگل وارد شو
+  3. روی «Add project» یا «افزودن پروژه» کلیک کن
+  4. اسم پروژه را بنویس (مثلاً zanbil-family) → Continue
+  5. Google Analytics را می‌توانی خاموش کنی (اختیاری) → Create project
+  6. صبر کن تا پروژه ساخته شود → Continue
+
+  ### مرحله ۲: ساخت اپ وب
+
+  1. در صفحه اصلی پروژه، روی آیکون وب (</>) کلیک کن
+  2. یک نام برای اپ بنویس (مثلاً Zanbil Web) → Register app
+  3. یک کادر بهت نشان می‌دهد که شامل firebaseConfig است
+     چیزی شبیه این:
+     const firebaseConfig = {
+       apiKey: "AIza...",
+       authDomain: "zanbil-xxxx.firebaseapp.com",
+       projectId: "zanbil-xxxx",
+       storageBucket: "zanbil-xxxx.appspot.com",
+       messagingSenderId: "123456789",
+       appId: "1:123456789:web:abcdef"
+     };
+  4. این مقادیر را کپی کن
+
+  ### مرحله ۳: قرار دادن کانفیگ در فایل
+
+  1. فایل zanbil.html را با یک ویرایشگر متن باز کن (مثل Notepad یا VS Code)
+  2. قسمت firebaseConfig را پیدا کن (نزدیک خط ۱۳۵)
+  3. مقادیر YOUR_... را با مقادیری که از Firebase کپی کردی جایگزین کن
+  4. فایل را ذخیره کن
+
+  ### مرحله ۴: ساخت دیتابیس Firestore
+
+  1. از منوی سمت چپ Firebase: Build → Firestore Database
+  2. روی Create database کلیک کن
+  3. حالت «Start in production mode» را انتخاب کن → Next
+  4. لوکیشن را europe-west (یا نزدیک‌ترین) انتخاب کن → Enable
+  5. بعد از ساخته شدن، برو به تب Rules
+  6. کل محتوا را پاک کن و این کد را بگذار:
+
+     rules_version = '2';
+     service cloud.firestore {
+       match /databases/{database}/documents {
+         match /{document=**} {
+           allow read, write: if true;
+         }
+       }
+     }
+
+  7. Publish را بزن
+
+  (این قوانین برای شروع ساده است. بعداً می‌توانی امن‌تر کنی)
+
+  ### مرحله ۵: اجرای برنامه روی چند دستگاه
+
+  روش ساده و پیشنهادی:
+
+  الف) آپلود روی Netlify (رایگان و خیلی راحت):
+     1. برو به https://app.netlify.com
+     2. با اکانت گوگل وارد شو
+     3. فایل zanbil.html را بکش و رها کن داخل صفحه (Drag & Drop)
+     4. یک لینک مثل https://random-name.netlify.app بهت می‌دهد
+     5. این لینک را برای همه اعضای خانواده بفرست
+     6. هر کس با گوشی خودش لینک را باز کند و با نام + شماره وارد شود
+
+  ب) روش دیگر: GitHub Pages یا حتی باز کردن مستقیم فایل (فقط برای تست روی یک دستگاه)
+
+  ### نکته مهم:
+  - بعد از گذاشتن کانفیگ درست، حالت دمو خودکار خاموش می‌شود
+  - همه کاربران داده‌های مشترک می‌بینند (لیست کاربران، لیست‌های ارسالی و ...)
+  - برای تست چند نفره، هر نفر باید با شماره موبایل متفاوت وارد شود
+
+  ============================================================
+  -->
+</body>
+</html>
